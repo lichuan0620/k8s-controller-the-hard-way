@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: k8s-controller-demo
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-controller
+  namespace: k8s-controller-demo
+  labels:
+    app.kubernetes.io/name: demo-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: demo-controller-role
+  labels:
+    app.kubernetes.io/name: demo-controller
+rules:
+  - apiGroups:
+      - demo.lichuan.guru
+    resources:
+      - tenants
+      - redises
+      - redises/status
+    verbs: [ '*' ]
+  - apiGroups:
+      - apps
+    resources:
+      - statefulsets
+    verbs: [ '*' ]
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - configmaps
+    verbs: [ '*' ]
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs: [ '*' ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: demo-controller-role-binding
+  namespace: k8s-controller-demo
+  labels:
+    app.kubernetes.io/name: demo-controller
+subjects:
+  - kind: ServiceAccount
+    name: demo-controller
+    namespace: k8s-controller-demo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: demo-controller-role
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-controller
+  namespace: k8s-controller-demo
+  labels:
+    app.kubernetes.io/name: demo-controller
+spec:
+  clusterIP: None
+  ports:
+    - port: 9090
+      name: telemetry
+      targetPort: telemetry
+  selector:
+    app.kubernetes.io/name: demo-controller
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: demo-controller
+  namespace: k8s-controller-demo
+  labels:
+    app.kubernetes.io/name: demo-controller
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: demo-controller
+  serviceName: demo-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: demo-controller
+    spec:
+      containers:
+        - name: controller
+          image: lichuan0620/demo-controller:latest
+          imagePullPolicy: Always
+          args:
+            - -v=4
+          ports:
+            - containerPort: 9090
+              name: telemetry
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 200m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: telemetry
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+      serviceAccountName: demo-controller
+
+

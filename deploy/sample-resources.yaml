@@ -1,0 +1,14 @@
+apiVersion: demo.lichuan.guru/v1
+kind: Tenant
+metadata:
+  name: demo
+---
+apiVersion: demo.lichuan.guru/v1
+kind: Redis
+metadata:
+  name: demo
+  namespace: k8s-controller-demo
+  labels:
+    demo.lichuan.guru/tenant: demo
+spec:
+  image: "redis:6.2"
