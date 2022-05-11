@@ -3,7 +3,6 @@ package reconciliation
 import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // SetStringMustEmpty set the value of `dest` string to equal `src`. `dest` must be an empty
@@ -47,14 +46,5 @@ func IndexOwnerRef(ownerReferences []metav1.OwnerReference, ref metav1.OwnerRefe
 
 // ReferSameObject returns true if a and b point to the same object.
 func ReferSameObject(a, b metav1.OwnerReference) bool {
-	aGV, err := schema.ParseGroupVersion(a.APIVersion)
-	if err != nil {
-		return false
-	}
-
-	bGV, err := schema.ParseGroupVersion(b.APIVersion)
-	if err != nil {
-		return false
-	}
-	return aGV.Group == bGV.Group && a.Kind == b.Kind && a.Name == b.Name
+	return a.APIVersion == b.APIVersion && a.Kind == b.Kind && a.Name == b.Name
 }

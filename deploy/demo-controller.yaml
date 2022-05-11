@@ -83,7 +83,7 @@ metadata:
   labels:
     app.kubernetes.io/name: demo-controller
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: demo-controller
@@ -110,15 +110,6 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: telemetry
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            timeoutSeconds: 5
-            successThreshold: 1
-            failureThreshold: 3
       serviceAccountName: demo-controller
 
 

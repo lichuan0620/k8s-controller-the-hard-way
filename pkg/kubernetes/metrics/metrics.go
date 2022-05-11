@@ -6,7 +6,8 @@ import (
 	"k8s.io/client-go/util/workqueue"
 )
 
-// InstallDefault install all available metrics to the default Prometheus registerer
+// InstallDefault builds and sets all metric providers and install them to the default Prometheus
+// registerer.
 func InstallDefault() {
 	workqueue.SetProvider(BuildWorkqueueMetricsProvider(nil, prometheus.DefaultRegisterer))
 	cache.SetReflectorMetricsProvider(BuildReflectorMetricsProvider(nil, prometheus.DefaultRegisterer))
